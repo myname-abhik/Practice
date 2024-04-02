@@ -3,6 +3,7 @@ const app = express();
 const users = require('./MOCK_DATA.json');
 const fs = require('fs');
 app.use(express.urlencoded({extended: false}));
+
 app.use((req,res,next)=>{
    console.log("Hello world from middeleware 1")
    req.myUserName = 'Abhik.dev'
@@ -58,6 +59,11 @@ app
     
     const id = Number( req.params.id);
     const user = users.find((user) => user.id === id)
+    if(!user)
+    {
+        return res.status(404).json({msg: 'User not found'});
+        // use for not any user id in the response
+    }
     return res.json(user);
    
 }) 
@@ -92,10 +98,15 @@ app
 });
 app.post('/api/users',(req, res) => {
     const body = req.body;
+    if(!body||!body.first_name||!body.last_name||!body.email||!body.gender||!body.job_title)
+    {
+        return res.status(400).json({msg:"bad request All fields are required"});
+    }
+    // status code for bad request
     users.push({...body,id: users.length +1});
     fs.writeFile("./MOCK_DATA.json",JSON.stringify(users),(err,data) =>
     {
-        return res.json({status: "Success", id: users.length});
+        return res.status(201).json({status: "Success", id: users.length});
     } );
     //create new user 
     // return res.json({status: "pending"})
