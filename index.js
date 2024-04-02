@@ -19,7 +19,11 @@ app.use((req,res,next)=>{
 });
 
 app.get('/api/users', (req, res) => {
-    console.log("Iam in get  route",req.myUserName)
+    res.setHeader('X-myname','Abhik');
+    //always add X to custom headers
+    // console.log(req.headers);
+    console.log(req.headers)    
+    // console.log("Iam in get  route",req.myUserName)
     return res.json(users);
 });
 app.get('/user', (req, res) => {
@@ -50,7 +54,9 @@ app.get('/user', (req, res) => {
 // //using : it signifies the dynamic in the request
 app
 .route('/api/users/:id')
-.get( (req, res) => { const id = Number( req.params.id);
+.get( (req, res) => { 
+    
+    const id = Number( req.params.id);
     const user = users.find((user) => user.id === id)
     return res.json(user);
    
