@@ -1,0 +1,10 @@
+// rest api- json
+get/api/users - list all users 
+get /api/users/1 - get  the id 1
+Dynamic path parameters
+get/api/user/2 get  user with id 2
+post/api/user - create new user
+patch/api/user - create new user with id 1
+delete/api/users/1 - delete the user with id 1
+
+users = users.filter((ele)=>ele.id!==id ?ele )
