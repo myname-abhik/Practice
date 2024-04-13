@@ -1,8 +1,46 @@
 const express =  require('express');
+const mongoose = require('mongoose');
 const app = express();
 const users = require('./MOCK_DATA.json');
 const fs = require('fs');
 app.use(express.urlencoded({extended: false}));
+mongoose.connect("mongodb+srv://abhik16chakrabortty:D0HsLzUvxx2GFcUu@cluster0.iuakazn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+.then(()=>{
+    console.log("connected to mongoDB")
+})
+.catch((err) => {
+    console.log("error connecting",err);
+})
+
+
+const UserSchema = new mongoose.Schema({
+    first_name :{
+        type: String,
+        required: true
+    },
+    last_name :{
+        type: String
+    },
+    email :{
+        type: String,
+        required: true,
+        unqiue: true
+    },
+    gender:{
+        type: String
+    }
+},{timestamps:true})
+const User = mongoose.model('User',UserSchema);
+// async function create()
+// {
+//     User.create({
+//         first_name: 'Abhik',
+//         last_name: 'Chakrabortty',
+//         email: 'abhik@gmail.com',
+//         gender: 'Male'
+//     })
+// }
+// create();
 
 app.use((req,res,next)=>{
    console.log("Hello world from middeleware 1")
@@ -27,10 +65,12 @@ app.get('/api/users', (req, res) => {
     // console.log("Iam in get  route",req.myUserName)
     return res.json(users);
 });
-app.get('/user', (req, res) => {
+app.get('/users', async(req, res) => {
+    
+    const Alldbusers = await User.find({});
     const html = `
     <ul>
-    ${users.map((user) =>`<li>${user.first_name}</li>`).join("")}
+    ${Alldbusers.map((user) =>`<li>${user.first_name}- email- ${user.email}</li>`).join("")}
     </ul>
     `
     res.send(html);
@@ -96,18 +136,22 @@ app
          return res.json({status: "Success to delete", id: id});
      } );
 });
-app.post('/api/users',(req, res) => {
+app.post('/api/users',async(req, res) => {
     const body = req.body;
-    if(!body||!body.first_name||!body.last_name||!body.email||!body.gender||!body.job_title)
+    if(!body||!body.first_name||!body.last_name||!body.email||!body.gender)
     {
         return res.status(400).json({msg:"bad request All fields are required"});
     }
     // status code for bad request
-    users.push({...body,id: users.length +1});
-    fs.writeFile("./MOCK_DATA.json",JSON.stringify(users),(err,data) =>
-    {
-        return res.status(201).json({status: "Success", id: users.length});
-    } );
+    const result =  await  User.create({
+        first_name: body.first_name,
+        last_name: body.last_name,
+        email: body.email,
+        gender: body.gender
+    })
+    console.log("result",result)
+   return res.status(201).json({msg:'sucessful'});
+
     //create new user 
     // return res.json({status: "pending"})
 });
