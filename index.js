@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     email :{
         type: String,
         required: true,
-        unqiue: true
+        unqiue: true,
     },
     gender:{
         type: String
@@ -46,10 +46,6 @@ app.use((req,res,next)=>{
    console.log("Hello world from middeleware 1")
    req.myUserName = 'Abhik.dev'
    next();
-   //for going to the next function
-//    return res.json({msg: 'Hello world from middeleware 1'})
-// end function with res.json
-// return res.end("hey")
 });
 app.use((req,res,next)=>{
     console.log("Hello world from middeleware 2",req.myUserName)
@@ -57,13 +53,15 @@ app.use((req,res,next)=>{
     next();
 });
 
-app.get('/api/users', (req, res) => {
+app.get('/api/users', async(req, res) => {
+    
     res.setHeader('X-myname','Abhik');
     //always add X to custom headers
     // console.log(req.headers);
-    console.log(req.headers)    
-    // console.log("Iam in get  route",req.myUserName)
-    return res.json(users);
+    const Alldbusers = await User.find({});
+    
+   
+    res.json(Alldbusers);
 });
 app.get('/users', async(req, res) => {
     
@@ -75,30 +73,14 @@ app.get('/users', async(req, res) => {
     `
     res.send(html);
 });
+
 // Middleware - create - assume as plugins
 
-// app.get('/api/users/:id',);
-// app.post('/api/users', (req, res) => {
-//     //add a new user to the database
-//     return res.json({status:'pending '});
-// });
-// app.patch('/api/users/:id', (req, res) => {
-//     //edit user with id
-
-//     return res.json({status:'pending '});
-// });
-// app.delete('/api/users/:id', (req, res) => {
-//     //delete the user from the database
-    
-//     return res.json({status:'pending '});
-// });
-// //using : it signifies the dynamic in the request
 app
 .route('/api/users/:id')
-.get( (req, res) => { 
+.get( async(req, res) => { 
+    const user = await User.findById(req.params.id);
     
-    const id = Number( req.params.id);
-    const user = users.find((user) => user.id === id)
     if(!user)
     {
         return res.status(404).json({msg: 'User not found'});
@@ -107,34 +89,18 @@ app
     return res.json(user);
    
 }) 
-.patch((req, res) => { 
-    const id = Number( req.params.id);
-    const user = users.find((user) => user.id === id)
-    const body = req.body;
-    users[id-1] = body
-    users[id-1].id = id
-    fs.writeFile("./MOCK_DATA.json",JSON.stringify(users),(err,data) =>
-    {
-        return res.json({status: "Success", id: id});
-    } );
-    
-    // return res.json({status: "pending"})
+.patch(async (req, res) => { 
+    const user =await  User.findByIdAndUpdate(req.params.id,{last_name:"Abhik "})
+   
+    return res.json ({msg : "ok"});
+  
 })
-.delete((req, res) => {
-     //delete user with id 
-     const id = Number( req.params.id);
-     const user = users.find((user) => user.id === id)
-    //  const body = req.body;
-    //  users.shift();
-    const index = users.indexOf(id);
-    // users.splice(index, 1);
-    // users = users.filter((ele)=>ele.id!==id);
-//    const  users1 = users.filter((user) => user.id!== id);
-    //  users[id-1].id = id
-     fs.writeFile("./MOCK_DATA.json",JSON.stringify(users.filter((user) => user.id!== id)),(err,data) =>
-     {
-         return res.json({status: "Success to delete", id: id});
-     } );
+.delete(async(req, res) => {
+     await User.findByIdAndDelete(req.params.id);
+    
+    return res.json({status: "success"});
+ 
+    
 });
 app.post('/api/users',async(req, res) => {
     const body = req.body;
@@ -142,7 +108,7 @@ app.post('/api/users',async(req, res) => {
     {
         return res.status(400).json({msg:"bad request All fields are required"});
     }
-    // status code for bad request
+   
     const result =  await  User.create({
         first_name: body.first_name,
         last_name: body.last_name,
@@ -152,8 +118,7 @@ app.post('/api/users',async(req, res) => {
     console.log("result",result)
    return res.status(201).json({msg:'sucessful'});
 
-    //create new user 
-    // return res.json({status: "pending"})
+ 
 });
 
 app.listen(3000, () => {
